@@ -4,14 +4,18 @@ const app = express();
 
 require('dotenv').config()
 
-const {initDatabase}= require('./controllers/initDb')
+const {initDatabase}= require('./DB/initDb')
 
 const db=require('./models/connection')
 
 initDatabase();
 
+const cookieParser=require('cookie-parser')
+const authRoutes=require('./routes/auth.routes')
+
 app.use(express.urlencoded({extended: false}))
 app.use(express.json());
+app.use(cookieParser())
 
 PORT = process.env.PORT
 
@@ -20,8 +24,9 @@ app.get("/",(req, res)=>{
         status: "Success",
         message: "Welcome to home page"
     })
-    // res.send("Hello");
 })
+
+app.use('/api/auth',authRoutes)
 
 app.get('/users', async(req,res)=>{
     const getUsersQuery = `
@@ -36,7 +41,7 @@ app.get('/users', async(req,res)=>{
         })
 
     } catch(error){
-        return res.send(500).json({
+        return res.status(500).json({
             status: "Failed",
             message: "Something went wrong",
             error: error
@@ -63,11 +68,6 @@ app.post('/users', async(req, res)=>{
     } catch(error){
         console.log(error)
     }
-    // res.json({
-    //     Username: username,
-    //     Useremail: email,
-    //     Userpaswd: password
-    // })
 })
 
 app.delete('/del', async (req, res) => {
